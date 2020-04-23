@@ -22,8 +22,6 @@ public class Model {
 	
 	public Studente richiamaStudente(int matricola){
 		
-		
-		
 		Studente s = sdao.getStudentePerMatricola(matricola);
 		
 		return s;
@@ -34,4 +32,20 @@ public class Model {
 		return listaS;
 	}
 
+	public List<Corso> richiamoCorsiDaMatricola(int matricola) {
+		List<Corso> corsi= new LinkedList<Corso>();
+		if(sdao.getStudentePerMatricola(matricola)==null) {
+			corsi.add(new Corso(null, -1, null, -1));
+		}
+		else
+			corsi = new LinkedList<>(sdao.getCorsiPerMatricola(matricola));
+		
+		return corsi;
+	}
+	
+	public boolean richiamoIscritto(int matricola, String nome) {
+		
+		return sdao.isIscritto(matricola, nome);
+		
+	}
 }

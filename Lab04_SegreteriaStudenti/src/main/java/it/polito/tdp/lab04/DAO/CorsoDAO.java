@@ -2,16 +2,18 @@ package it.polito.tdp.lab04.DAO;
 
 import java.sql.Connection;
 
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 import it.polito.tdp.lab04.model.Corso;
 import it.polito.tdp.lab04.model.Studente;
 
 public class CorsoDAO {
+	
+	Map<String, Corso> mappaCorsi = new TreeMap<String, Corso>();
 	
 	/*
 	 * Ottengo tutti i corsi salvati nel Db
@@ -41,6 +43,7 @@ public class CorsoDAO {
 				Corso c = new Corso(codins, numeroCrediti, nome, periodoDidattico);
 				// Aggiungi il nuovo oggetto Corso alla lista corsi
 				corsi.add(c);
+				mappaCorsi.put(c.getCodins(), c);
 			}
 
 			conn.close();
@@ -58,8 +61,11 @@ public class CorsoDAO {
 	/*
 	 * Dato un codice insegnamento, ottengo il corso
 	 */
-	public void getCorso(Corso corso) {
-		
+	public Corso getCorso(Corso corso) {
+		if(mappaCorsi.containsKey(corso.getCodins()))
+			return mappaCorsi.get(corso.getCodins());
+		else
+			return null;
 	}
 
 	/*
@@ -94,9 +100,38 @@ public class CorsoDAO {
 	 * Data una matricola ed il codice insegnamento, iscrivi lo studente al corso.
 	 */
 	public boolean inscriviStudenteACorso(Studente studente, Corso corso) {
-		// TODO
-		// ritorna true se l'iscrizione e' avvenuta con successo
-		return false;
+		
+		String sql="insert into iscrizione values (?,?)";
+		boolean  fatto= false;
+		List<Corso> lCorsi = new LinkedList<>(getTuttiICorsi());
+		StudenteDAO sd= new StudenteDAO(); 
+		if(corso.getNome()=="" || sd.getStudentePerMatricola(studente.getMatricola())==null)
+			return fatto;
+		
+		try {
+			Connection conn = ConnectDB.getConnection();
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setInt(1, studente.getMatricola());
+			Corso c =null;
+			for(int i=0; i<lCorsi.size(); i++) {
+				if(lCorsi.get(i).getNome().compareTo(corso.getNome())==0) {
+					c= lCorsi.get(i);
+				}
+			}
+			
+			
+			st.setString(1, c.getCodins());
+			ResultSet rs = st.executeQuery();
+
+			fatto= true;
+			conn.close();
+
+
+		} catch (SQLException e) {
+			// e.printStackTrace();
+			throw new RuntimeException("Errore Db", e);
+		}
+		return fatto;
 	}
 
 }

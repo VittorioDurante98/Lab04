@@ -71,6 +71,8 @@ public class FXMLController {
         	txtcognome.setText(s.getCognome());
     	}catch(NumberFormatException e) {
     		txtRisultato.setText("Inserire una matricola nel formato corretto (numero intero)");
+    	}catch(NullPointerException pe) {
+    		txtRisultato.setText("Inserire una matricola corretta");
     	}
    
     }
@@ -91,7 +93,35 @@ public class FXMLController {
 
     @FXML
     void searchCorsi(ActionEvent event) {
-
+    	txtRisultato.clear();
+    	int matricola=0;
+		try {
+			matricola = Integer.parseInt(txtMatricola.getText());
+		}catch (NumberFormatException  e) {
+		txtRisultato.setText("Inserire una matricola nel formato corretto (numero intero)");
+	    }
+    	if(menuCorsi.getValue()=="" || menuCorsi.getValue()==null) {
+        	
+        	List<Corso> listaCorsi = new LinkedList<>(model.richiamoCorsiDaMatricola(matricola));
+        	for(int i=0; i<listaCorsi.size(); i++) {
+        		if(listaCorsi.get(i).getCrediti()==-1) {
+        			txtRisultato.appendText("Matricola errata");
+        			return;
+        		}
+        		txtRisultato.appendText(listaCorsi.get(i).toString());	
+        	}
+        	
+    	}
+    	
+    	else {
+    		boolean trovato;
+    		String corso = menuCorsi.getValue();
+    		trovato = model.richiamoIscritto(matricola, corso);
+    		if(trovato==true)
+    			txtRisultato.appendText("Sei iscritto");
+    		else
+    			txtRisultato.appendText("non sei iscritto");
+    	}
     }
 
     @FXML
@@ -103,6 +133,10 @@ public class FXMLController {
     	Corso c = new Corso(null, 0, s,0);
     	List<Studente> liS = new LinkedList<Studente>(model.richiamoDellaLista(c));
     	txtRisultato.appendText(liS.toString());
+    	
+    	for(int i=0; i<liS.size(); i++) {
+    		txtRisultato.appendText(liS.get(i).toString());
+    	}
     }
 
     @FXML
@@ -126,6 +160,6 @@ public class FXMLController {
     	menuCorsi.getItems().addAll(model.tornanomiCorsi());
     	txtnome.setDisable(true);
     	txtcognome.setDisable(true);
-    	txtRisultato.setDisable(true);
+    	txtRisultato.setEditable(false);
     }
 }
